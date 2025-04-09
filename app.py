@@ -11,15 +11,29 @@ import plotly.express as px
 
 
 
+import os
+
 @st.cache_resource
 def carrega_modelo():
-    url = 'https://drive.google.com/file/d/1u_NmIr5VEQOfxJaXzDd3n6tYz_A74hw1/view?usp=sharing'
-    
-    gdown.download(url,'modelo_quantizado16bits.tflite')
-    interpreter = tf.lite.Interpreter(model_path='modelo_quantizado16bits.tflite')
-    interpreter.allocate_tensors()
+    url = 'https://drive.google.com/uc?id=1u_NmIr5VEQOfxJaXzDd3n6tYz_A74hw1'
+    output = 'modelo_quantizado16bits.tflite'
 
-    
+    # Faz o download do modelo
+    gdown.download(url, output, quiet=False)
+
+    # Verifica se o arquivo foi realmente baixado
+    if not os.path.exists(output):
+        st.error("Erro: o modelo não foi baixado corretamente. Verifique o link do Google Drive.")
+        st.stop()  # Interrompe a execução do app
+
+    # Tenta carregar o modelo TFLite
+    try:
+        interpreter = tf.lite.Interpreter(model_path=output)
+        interpreter.allocate_tensors()
+    except Exception as e:
+        st.error(f"Erro ao carregar o modelo: {str(e)}")
+        st.stop()
+
     return interpreter
 
 
